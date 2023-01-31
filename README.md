@@ -1,70 +1,166 @@
-# Getting Started with Create React App
+## On-Demand Session 2
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+* thired party packages uuid
+* adding new item to the list in state
+* updating an item of list ina state
 
-## Available Scripts
+## Third-Party Packages
+* UUID (Universally Unique IDentifier)
+* Using the UUID package, we can generate a unique id
 
-In the project directory, you can run:
+## Installing UUID
 
-### `npm start`
+* npm install uuid
+------------------------------------------------------------------------
+## Importing of UUID
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+UUID package provides uuidv4(), which returns a unique id whenever it is called.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+* import {v4 as uuidv4} from 'uuid'
+-----------------------------------------------------------------------
 
-### `npm test`
+# Best Practice
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+* The state should be immutable. We shouldn’t update the array/object directly.
+* The best practice is to create a new array/object from the array/object in the previous state using the spread operator.
 
-### `npm run build`
+this.setState(prevState => ({
+  contactsList: [...prevState.contactsList, newContact ],
+}))
+------------------------------------------------------------------------
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+##  Updating a Property of an Item inside List
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+We should not update the property of a list item directly. To update the property of a list item, we should create a new object and return it to the list.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# Syntax:
 
-### `npm run eject`
+{...object, newItem}
+------------------------------------------------------------------------
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# Exmaple:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# File: src/App.js
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+import {Component} from 'react'
+import {v4 as uuidv4} from 'uuid'
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+import ContactItem from './components/ContactItem'
 
-## Learn More
+import './App.css'
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+const initialContactsList = [
+  {
+    id: uuidv4(),
+    name: 'Ram',
+    mobileNo: 9999988888,
+    isFavorite: false,
+  },
+  {
+    id: uuidv4(),
+    name: 'Pavan',
+    mobileNo: 8888866666,
+    isFavorite: true,
+  },
+  {
+    id: uuidv4(),
+    name: 'Nikhil',
+    mobileNo: 9999955555,
+    isFavorite: false,
+  },
+]
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+class App extends Component {
+  state = {
+    contactsList: initialContactsList,
+    name: '',
+    mobileNo: '',
+  }
 
-### Code Splitting
+  toggleIsFavorite = id => {
+    this.setState(prevState => ({
+      contactsList: prevState.contactsList.map(eachContact => {
+        if (id === eachContact.id) {
+          //   eachContact.isFavorite = !eachContact.isFavorite
+          return {...eachContact, isFavorite: !eachContact.isFavorite}
+        }
+        return eachContact
+      }),
+    }))
+  }
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+  onAddContact = event => {
+    event.preventDefault()
+    const {name, mobileNo} = this.state
+    const newContact = {
+      id: uuidv4(),
+      name,
+      mobileNo,
+      isFavorite: false,
+    }
 
-### Analyzing the Bundle Size
+    this.setState(prevState => ({
+      contactsList: [...prevState.contactsList, newContact],
+      name: '',
+      mobileNo: '',
+    }))
+  }
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+  onChangeMobileNo = event => {
+    this.setState({mobileNo: event.target.value})
+  }
 
-### Making a Progressive Web App
+  onChangeName = event => {
+    this.setState({name: event.target.value})
+  }
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+  render() {
+    const {name, mobileNo, contactsList} = this.state
+    return (
+      <div className="app-container">
+        <div className="responsive-container">
+          <h1 className="heading">Contacts</h1>
+          <form className="contact-form-container" onSubmit={this.onAddContact}>
+            <input
+              value={name}
+              onChange={this.onChangeName}
+              className="input"
+              placeholder="Name"
+            />
+            <input
+              className="input"
+              value={mobileNo}
+              onChange={this.onChangeMobileNo}
+              placeholder="Mobile Number"
+            />
+            <button type="submit" className="button">
+              Add Contact
+            </button>
+          </form>
+          <ul className="contacts-table">
+            <li className="table-header">
+              <p className="table-header-cell name-column">Name</p>
+              <hr className="separator" />
+              <p className="table-header-cell">Mobile Number</p>
+            </li>
+            {contactsList.map(eachContact => (
+              <ContactItem
+                key={eachContact.id}
+                contactDetails={eachContact}
+                toggleIsFavorite={this.toggleIsFavorite}
+              />
+            ))}
+          </ul>
+        </div>
+      </div>
+    )
+  }
+}
 
-### Advanced Configuration
+export default App
+------------------------------------------------------------------------
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Publish 
 
-### Deployment
+# https://saiconatctapp.ccbp.tech
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
